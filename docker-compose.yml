@@ -1,0 +1,30 @@
+version: "3.9"
+
+services:
+  la-uploader:
+    image: "${IMAGE}"
+    container_name: la-uploader
+    user: "${UID}:${GID}"
+    environment:
+      JOB_DIR: /jobs
+      POLL_INTERVAL: "${POLL_INTERVAL}"
+    volumes:
+      - ./jobs:/jobs
+    read_only: true
+    tmpfs:
+      - /tmp:rw,mode=1777,size=64m
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "[ -d /jobs ] && [ -w /jobs ] && [ -r /jobs ] || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
